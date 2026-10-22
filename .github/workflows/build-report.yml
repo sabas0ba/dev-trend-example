@@ -1,0 +1,79 @@
+# レポートの定期生成。ツール本体は sabas0ba/dev-trend の composite action として呼び、
+# 本リポジトリは設定 (dev-trend.toml)、生成物 (docs/、GitHub Pages で公開)、data ブランチ (snapshots と
+# summaries) を持つ。public リポジトリであり、対象もツールの仕様により public リポジトリに限られる。
+#
+# 依存する action はコミット SHA で固定する。末尾のコメントに対応する版または固定日を記す。
+# sabas0ba/dev-trend は private のため、同リポジトリの Actions の Access 設定で
+# 同一 owner からの利用を許可しておく。
+name: Build report
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 毎週月曜 00:00 UTC。対象リポジトリ側の更新を取り込む。
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+    inputs:
+      summarize:
+        description: >-
+          要約のエージェント step を実行する。既定では無効。手段は利用者が用意する
+          (ツール側 docs/spec.md の「エージェントの運用形態」を参照)。
+        type: boolean
+        default: false
+
+# 既定は読み取りのみ。書き込みは build job にだけ与える。
+permissions:
+  contents: read
+
+# 生成物と data ブランチの更新が競合しないよう、同時実行を抑止する。
+concurrency:
+  group: build-report
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        # 生成物を push するため credentials を保持する (既定)。
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Check out the data branch
+        uses: sabas0ba/dev-trend/data-branch@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        with:
+          command: checkout
+
+      - name: Collect and prepare summary requests
+        uses: sabas0ba/dev-trend@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        with:
+          phase: prepare
+
+      - name: Summarize
+        # エージェントの接続は利用者が用意する。既定では無効であり、有効化しても
+        # 手段が未設定であることを通知するだけに留める (LLM のキーは本 workflow に置かない)。
+        # prepare と render の間に置き、この実行で書かれた要約結果を同じ実行のレポートに反映する。
+        if: ${{ inputs.summarize }}
+        run: |
+          echo "::notice::要約のエージェント step は未設定です。.work/out/requests/ を入力に、.work/data/summaries/ へ結果を書く手段を用意してください。"
+
+      - name: Validate summaries and render report
+        uses: sabas0ba/dev-trend@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        with:
+          phase: render
+
+      - name: Commit snapshots and summaries
+        uses: sabas0ba/dev-trend/data-branch@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        with:
+          command: commit
+
+      - name: Commit report
+        uses: sabas0ba/dev-trend/data-branch@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        with:
+          command: commit
+          dir: .
+          branch: ${{ github.ref_name }}
+          message: "chore: regenerate report"
+          pathspec: docs/index.html docs/report.txt docs/report.md

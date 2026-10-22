@@ -1,0 +1,19 @@
+# dev-trend の設定。GitHub Actions の定期生成と手元実行が共有する。
+# 項目の意味はツール側 (sabas0ba/dev-trend) の docs/spec.md「設定ファイル」を参照する。
+
+[targets]
+owners = ["sabas0ba"]
+
+[range]
+weeks = 8
+
+[snapshot]
+enabled = true
+keep_weeks = 52
+
+[summary]
+language = "ja"
+max_chars = 200
+
+[output]
+formats = ["html", "ascii", "mermaid"]
