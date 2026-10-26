@@ -42,12 +42,12 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Check out the data branch
-        uses: sabas0ba/dev-trend/data-branch@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        uses: sabas0ba/dev-trend/data-branch@eb9dbd1c11f8b8049217ebfd8aad0c19861a89fd # main 2026-10-26 (PR #8 merge)
         with:
           command: checkout
 
       - name: Collect and prepare summary requests
-        uses: sabas0ba/dev-trend@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        uses: sabas0ba/dev-trend@eb9dbd1c11f8b8049217ebfd8aad0c19861a89fd # main 2026-10-26 (PR #8 merge)
         with:
           phase: prepare
 
@@ -60,17 +60,17 @@ jobs:
           echo "::notice::要約のエージェント step は未設定です。.work/out/requests/ を入力に、.work/data/summaries/ へ結果を書く手段を用意してください。"
 
       - name: Validate summaries and render report
-        uses: sabas0ba/dev-trend@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        uses: sabas0ba/dev-trend@eb9dbd1c11f8b8049217ebfd8aad0c19861a89fd # main 2026-10-26 (PR #8 merge)
         with:
           phase: render
 
       - name: Commit snapshots and summaries
-        uses: sabas0ba/dev-trend/data-branch@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        uses: sabas0ba/dev-trend/data-branch@eb9dbd1c11f8b8049217ebfd8aad0c19861a89fd # main 2026-10-26 (PR #8 merge)
         with:
           command: commit
 
       - name: Commit report
-        uses: sabas0ba/dev-trend/data-branch@77657424cc5475b381e0d9a90058cd9c29db52a1 # main 2026-10-20 (PR #7 merge)
+        uses: sabas0ba/dev-trend/data-branch@eb9dbd1c11f8b8049217ebfd8aad0c19861a89fd # main 2026-10-26 (PR #8 merge)
         with:
           command: commit
           dir: .
